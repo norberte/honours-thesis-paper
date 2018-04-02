@@ -6,6 +6,7 @@
 % Copyright (C) 1985, all rights reserved.
 % Modifications Copyright 1988, Peter F. Patel-Schneider
 % Further modifictions by Stuart Shieber, 1991, and Fernando Pereira, 1992.
+% Further modifictions by Jon Dehdari, 2015.
 % Copying of this file is authorized only if either
 % (1) you make absolutely no changes to your copy, including name, or
 % (2) if you do make changes, you name it something other than
@@ -32,6 +33,18 @@
 %     \def\shortcite{\def\citename##1{}\@internalcite}
 %     \def\@biblabel#1{\def\citename##1{##1}[#1]\hfill}
 % which makes \shortcite the macro for short citations.
+%
+% You can include a url field in your BibTeX entries, and then the title of
+% the cited paper will get hyperlinked.  Then start your LaTeX file as:
+%
+% \documentclass[11pt]{article}
+% \usepackage{times}
+% \usepackage[hyperref,table,x11names]{xcolor} % See documentation PDF at http://www.ctan.org/pkg/xcolor
+% \definecolor{linkblue}{rgb}{0,0,0.18}
+% \usepackage{hyperref}
+% \hypersetup{unicode=true,pdfa=true,pdfborder=0 0 0,colorlinks=true,citecolor=linkblue,linkcolor=linkblue,urlcolor=linkblue,bookmarksopen=true,bookmarksopenlevel=2}
+% \usepackage{acl2015}
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Changes made by SMS for thesis style
@@ -39,6 +52,7 @@
 %   "Ph.D." includes periods (not "PhD")
 %   moved year to immediately after author's name
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 ENTRY
   { address
     author
@@ -60,6 +74,7 @@ ENTRY
     series
     title
     type
+    url
     volume
     year
   }
@@ -271,8 +286,11 @@ FUNCTION {format.title}
 { title empty$
     { "" }
 
-    { title "t" change.case$ }
-
+    { url empty$  % If a URL is given in the BibTeX file, make the title text link to it
+        { title "t" change.case$ }
+        { "\href{" url * "}{" * title * "}" * "t" change.case$ }
+        if$
+    }
   if$
 }
 
@@ -319,7 +337,10 @@ FUNCTION {format.date}
 }
 
 FUNCTION {format.btitle}
-{ title emphasize
+{ url empty$  % If a URL is given in the BibTeX file, make the title text link to it
+    { title emphasize }
+    { "\href{" url * "}{" * title * "}" * emphasize }
+    if$
 }
 
 FUNCTION {tie.or.space.connect}
@@ -1304,6 +1325,7 @@ FUNCTION {begin.bib}
   if$
 
   "\begin{thebibliography}{" "}" * write$ newline$
+  "\providecommand{\href}[2]{#2}" write$ newline$
 
 }
 
@@ -1319,4 +1341,3 @@ FUNCTION {end.bib}
 }
 
 EXECUTE {end.bib}
-
